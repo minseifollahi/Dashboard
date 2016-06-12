@@ -1,0 +1,252 @@
+<html ng-app = "myApp">
+  <head>
+	<script src="https://code.jquery.com/jquery-1.12.3.min.js"   integrity="sha256-aaODHAgvwQW1bFOGXMeX+pC4PZIPsvn2h1sArYOhgXQ="   crossorigin="anonymous"></script>
+	<!-- Angular CDN -->
+   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+   <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.min.js"></script>
+
+   <script   src="https://code.jquery.com/jquery-1.12.3.min.js"   integrity="sha256-aaODHAgvwQW1bFOGXMeX+pC4PZIPsvn2h1sArYOhgXQ="   crossorigin="anonymous"></script>
+
+   <!-- Bootstrap CDN -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+
+	<script type = "text/javascript">
+
+	    	var myAppDB = angular.module('myApp', ['ngRoute']);
+	    	myAppDB.config(function ($routeProvider) {
+		     $routeProvider
+		        .when('/',{
+		            templateUrl: 'partials/login.html'
+		        })
+		         .when('/user/:name',{
+		            templateUrl: 'partials/profile.html'
+		        })
+		         .when('/topic/:id',{
+		            templateUrl: 'partials/topic.html'
+		        })
+		         .when('/dashboard',{
+		            templateUrl: 'partials/dashboard.html'
+		        })
+		        .otherwise({
+		          redirectTo: '/'
+		        });
+		      });
+
+
+	    	myAppDB.factory('userFactory',function ($http){
+	    		var users = []
+	    		var factory = {}
+
+	    		factory.getUsers = function (callback){
+	    			callback(users)
+	    		}
+	    		factory.createUser = function(user){
+	    			users.push(user)
+	    			// console.log(user.name + " in factory")
+	    			$http.post('/createuser', user).success(function(output){
+	    				// console.log(output)
+	    			})
+	    		}
+	    		factory.showUser = function (id, callback){
+	    			console.log(id, "showUser in userFactory")
+	    			$http.get('/showuser/'+ id).success(function(output){
+	    				callback(output)
+	    			})
+	    		}    		
+	    		return factory;
+	    	})
+
+	    	myAppDB.factory('topicFactory',function ($http){
+	    		var topics = []
+	    		var factory = {}
+
+	    		factory.getTopics = function (callback){
+	    			$http.get('/topics').success(function(output){
+	    				topics = output;
+	    				callback(topics);
+	    			})
+	    			callback(topics)
+	    		}
+	    		factory.createTopic = function (topic,callback){
+	    			$http.post('/createtopic', topic).success(function(output){
+	    				callback(output)
+	    			})
+	    		}
+	    		factory.showTopic = function (id, callback){
+	    			$http.get('/show/'+ id).success(function(output){
+	    				callback(output)
+	    			})
+	    		}
+    		
+	    		return factory;
+	    	})	  
+
+	    	myAppDB.factory('answerFactory',function ($http){
+	    		var answers = []
+	    		var factory = {}
+
+	    		factory.getAnswers = function (callback){
+	    			$http.get('/answers').success(function(output){
+	    				answers = output
+	    				callback(answers)
+	    			})
+	    		}
+
+	    		factory.createAnswer = function (answer,callback){
+	    			console.log(answer)
+	    			$http.post('/createanswer', answer).success(function(output){
+	    				callback(output)
+	    			})
+	    		}
+
+	    		factory.likeAnswer = function (like_id,callback){
+	    			console.log(like_id)
+	    			$http.post('/createlike/' + like_id).success(function(output){
+	    				callback(output)
+	    			})
+	    		}
+
+	    		factory.dislikeAnswer = function (dislike_id,callback){
+	    			console.log(dislike_id)
+	    			$http.post('/createdislike/' + dislike_id).success(function(output){
+	    				callback(output)
+	    			})
+	    		}	    		
+	    		return factory;
+	    	})  	
+
+	    	myAppDB.factory('commentFactory',function ($http){
+		    		var comments = []
+		    		var factory = {}
+		    		factory.createComment = function (comment,callback){
+		    			// console.log(comment)
+		    			$http.post('/createcomment', comment).success(function(output){
+		    				// console.log(output)
+		    				callback(output)
+		    			})
+	    			}
+	    			return factory;
+	    		})
+
+	    	myAppDB.controller('usersController', function($scope, $location, userFactory, $routeParams){
+	    		$scope.users = [];
+	    		userFactory.getUsers(function(data){
+	    			$scope.users = data
+	    		})
+
+	    		$scope.addUser = function(data){
+	    			userFactory.createUser($scope.newUser);
+	    				$scope.newUser = {};
+	    				$location.path('/dashboard')
+	    		}
+
+	    	})
+
+	    	myAppDB.controller('topicsController', function($scope, $location, userFactory, topicFactory){
+	    		$scope.topics = [];
+	    		$scope.users = [];
+
+	    		// console.log("topics controller")
+
+	    		userFactory.getUsers(function(data){
+	    			$scope.users = data
+	    			$scope.current_user = data[0].name
+	    		})
+
+	    		topicFactory.getTopics(function(data){
+	    			$scope.topics = data;
+	    		})
+
+	    		$scope.addTopic = function(data){
+	    			console.log($scope.newTopic)
+	    			topicFactory.createTopic($scope.newTopic, function(data){
+	    				topicFactory.getTopics(function(data){
+	    					$scope.newTopic = {};
+	    					$scope.topics = data;
+	    				})
+	    			});
+	    		}
+
+	    	})
+	    	myAppDB.controller('discussionsController', function($scope, $location, $routeParams, userFactory, topicFactory, answerFactory, commentFactory){
+	    		$scope.users = [];
+	    		$scope.topics = [];
+	    		$scope.discussions = [];
+	    		$scope.answers = [];
+	    		$scope.comments = [];
+	    		var id = $routeParams.id; 
+
+	    		userFactory.getUsers(function(data){
+	    			$scope.users = data
+	    			$scope.current_user = data[0].name
+	    		})
+	    		topicFactory.getTopics(function(data){
+	    			// console.log(data)
+	    			$scope.topics = data;
+	    		})
+	    		topicFactory.showTopic(id, function(data){
+	    			$scope.discussions = data;
+	    			// console.log(data)
+	    		})
+	    		$scope.addAnswer = function(){
+	    			answerFactory.createAnswer($scope.newAnswer, function(data){
+		    		topicFactory.showTopic($routeParams.id, function(data){
+		    				$scope.discussions = data;
+		    				$scope.newAnswer= {};
+		    			})
+	    			});
+	    		}
+	    		$scope.addComment = function(user_name, test){
+	    			commentFactory.createComment(test, function(data){
+		    		topicFactory.showTopic($routeParams.id, function(data){
+		    				console.log(data)
+		    				$scope.discussions = data;
+		    				$scope.newComment= {};
+		    			})
+	    			});
+	    		}	    		
+	    		$scope.addLike = function(data){
+	    			answerFactory.likeAnswer(data, function(data){
+		    			topicFactory.showTopic(id, function(data){
+		    				$scope.discussions = data;
+		    				$scope.newAnswer= {};
+		    			})
+	    			});
+	    		}
+	    		$scope.addDislike = function(data){
+	    			answerFactory.dislikeAnswer(data, function(data){
+		    			topicFactory.showTopic(id, function(data){
+		    				$scope.discussions = data;
+		    				$scope.newAnswer= {};
+		    			})
+	    			});
+	    		}
+	    	})
+
+	    	myAppDB.controller('profilesController', function($scope, $location, userFactory, $routeParams){
+	    		var name = $routeParams.name; 
+	    		$scope.user = [];
+	    		// console.log(name)
+	    		userFactory.showUser(name, function(data){
+	    			console.log(data)
+	    			$scope.user = data
+	    		})
+	    	})
+
+
+	    </script>
+	</head>
+	<body>
+		<div class = "container">
+			<div ng-view="">
+				<h1>Hello</h1>
+        	</div>
+		</div>
+	</body>
+</html>

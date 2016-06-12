@@ -1,0 +1,50 @@
+<div ng-controller="discussionsController">
+
+	<div ng-repeat = "dis in discussions">
+		<h1>{{dis.user_name}} posted a topic:</h1>
+		<h3>{{dis.title}}</h3>
+		<p>Description: {{dis.description}}</p>
+		<h2>Post your wisdom here...</h2>
+	</div>	
+
+	<form>
+		<div class = "form-group col-md-4">
+			<input type="hidden" class="form-control" ng-value = "newAnswer.comment=discussions[0]._id" >
+			<input type="hidden" class="form-control" ng-value = "newAnswer.user_name=current_user" >
+			<label for="answer">Answer:</label>
+			<p><input type = "text" class = "form-control" rows = "5" ng-model = "newAnswer.answer"></p>
+			<button type="submit" class="btn btn-primary" ng-Click = "addAnswer()">Answer</button>
+		</div>
+	</form>
+
+	<div ng-repeat = "dis in discussions">
+		<div ng-repeat = "x in dis.answers">
+			<h6>{{x.user_name}}: {{x.text}}</h6>
+
+				<button type="submit" class="btn btn-primary" ng-Click = "addLike(x._id)">Like</button>
+				<button type="submit" class="btn btn-primary" ng-Click = "addDislike(x._id)">Dislike</button>
+
+				<form>
+					<div class = "form-group col-md-4">
+						<input type="hidden" class="form-control" ng-value = "newComment[x._id].userid=x._id" >
+						<input type="hidden" class="form-control" ng-value = "newComment[x._id].user_name=current_user" >
+						<label for="comment">Comment:</label>
+						<p><input type = "text" class = "form-control" rows = "5" ng-model = "newComment[x._id].text"></p>
+						<button type="submit" class="btn btn-primary" ng-Click = "addComment(x.user_name, newComment[x._id])">Comment</button>
+					</div>
+				</form>
+
+				<div ng-repeat = "y in x.comments">
+					{{y.user_name}}: {{y.comment}}
+				</div> 
+
+				<p>Number of likes:{{x.num_like}}|| Dislikes:{{x.num_dislike}}</p>
+
+		</div>
+	</div>
+
+	
+
+
+	
+</div>
